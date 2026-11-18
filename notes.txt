@@ -1,3 +1,36 @@
 pip install dbt-core==1.12.6 dbt-duckdb==1.11.1
 pip install papermill
 pip install ipykernel
+
+> git remote add origin url
+> git remote -v
+> git branch -M main
+> git pull origin main --allow-unrelated-histories
+> git commit -m "Initial release"
+> git push -u origin main
+
+Create the dbt project:
+> mkdir -p models/staging
+> mkdir -p models/intermediate
+> mkdir -p models/marts
+> mkdir seeds; mkdir macros; mkdir snapshots; mkdir analyses
+
+Create the dbt_project.yml
+Create the profiles.yml
+
+> dbt ls
+> dbt debug
+> dbt debug --target prod
+
+Create the staging/_sources.yml
+
+Check the sources
+> dbt ls --resource-type source
+
+Check freshness
+> dbt source freshness
+
+Create the stg_*.sql files
+
+Run
+> dbt run

@@ -1,0 +1,12 @@
+shopflow:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: "{{ env_var('SHOPFLOW_DB', 'shopflow.duckdb') }}"
+      threads: 4
+    prod:
+      type: duckdb
+      path: shopflow_prod.duckdb
+      threads: 4
+    
