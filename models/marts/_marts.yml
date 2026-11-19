@@ -1,0 +1,48 @@
+version: 2
+
+models:
+  - name: dim_customers
+    description: One row per customer with lifetime value and segment.
+    columns:
+      - name: customer_id
+        data_tests: [unique, not_null]
+      - name: customer_segment
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['vip', 'regular', 'new']
+  
+  - name: fct_orders
+    description: One row per order, with item totals and payments by method.
+    columns:
+      - name: order_id
+        description: Primary key, one row per order
+        data_tests: [unique, not_null]
+      - name: order_total
+        description: Sum of quantity times unit price, in dollars.
+      - name: total_paid
+        description: Sum of all payments for the order, in dollars.
+
+unit_tests:
+  - name: test_customer_segment_thresholds
+    model: dim_customers
+    given:
+      - input: ref('stg_customers')
+        rows:
+          - {customer_id: 1, first_name: A, last_name: B, country: PK}
+          - {customer_id: 2, first_name: C, last_name: D, country: PK}
+          - {customer_id: 3, first_name: E, last_name: F, country: PK}
+      - input: ref('fct_orders')
+        rows:
+          - {customer_id: 1, status: delivered, order_total: 1000}
+          - {customer_id: 2, status: shipped, order_total: 299.99}
+          - {customer_id: 2, status: returned, order_total: 5000}
+      - input: ref('country_regions')
+        rows:
+          - {country: PK, country_name: Pakistan, region: Asia}
+    expect:
+      rows:
+        - {customer_id: 1, customer_segment: vip}
+        - {customer_id: 2, customer_segment: new}
+        - {customer_id: 3, customer_segment: new}
+    

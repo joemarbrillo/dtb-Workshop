@@ -1,0 +1,45 @@
+version: 2
+
+models:
+    - name: stg_customers
+      description: One row per customer, emails cleaned to lower case
+      columns:
+        - name: customer_id
+          description: Primary key of a customer.
+          data_tests:
+            - unique
+            - not_null
+        - name: email
+          data_tests:
+            - unique
+            - not_null
+    
+    - name: stg_orders
+      description: "{{ doc('stg_orders') }}"
+      columns:
+        - name: order_id
+          data_tests:
+            - unique
+            - not_null
+        - name: status
+          data_tests:
+            - accepted_values:
+                arguments:
+                    values: ['placed', 'shipped', 'delivered', 'returned']
+        - name: customer_id
+          data_tests:
+            - relationships:
+                arguments:
+                    to: ref('stg_customers')
+                    field: customer_id
+    - name: stg_payments
+      columns:
+        - name: amount
+          data_tests:
+            - positive_value
+        - name: payment_method
+          data_tests:
+            - relationships:
+                arguments:
+                  to: ref('payment_methods')
+                  field: payment_method

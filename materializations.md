@@ -1,0 +1,5 @@
+- view: stores only the query; cheap to build, recomputed on every read
+- table: stores the result; fast to read, rebuiot on every dbt run
+- ephemeral: nothing created, inlined as cte where it is used
+- incremental: a table tha t onlne processes new rows after the first run
+- materialized_view: managed by the warehouse itself (not in duckdb)

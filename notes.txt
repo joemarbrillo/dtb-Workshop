@@ -34,3 +34,165 @@ Create the stg_*.sql files
 
 Run
 > dbt run
+
+To query the customers table:
+> dbt show --select stg_customers
+
+Inline:
+> dbt show --inline "select status, count(*) as n from {{ ref('stg_orders') }} group by 1 order by 1"
+
+info: Check the target/run/shopflow/models/staging folder for the generated sql queries
+
+Let's create a seed maps: seeds/payment_methods.csv, seeds/country_regions.csv
+
+Create the generate schema macro:
+> code macros/generate_schema_name.sql
+
+Generate the seed:
+> dbt seed
+
+Rerun, to update with the seeds
+> dbt run
+
+Check one of the seeds
+> dbt show --select country_regions
+
+Create an intermediate model
+> code .\models\intermediate\int_order_items_enriched.sql
+
+Check the item
+> dbt ls --select +int_order_items_enriched
+> dbt ls --select stg_products+
+    Note, a + after the model means select everything downstream
+
+Compile (renders the sql)
+> dbt compile --select int_order_items_enriched
+
+Run it
+> dbt run --select +int_order_items_enriched
+
+Preview
+> dbt show --limit 4 --inline "select order_item_id,product_name,category,quantity,unit_price,line_total from {{ref('int_order_items_enriched')}}"
+
+Materialization
+> code materializations.md
+
+Modify the dbt_project.yml to add the intermediate model
+
+Create the fact table
+> code models/marts/fct_orders.sql
+> code models/marts/dim_customers.sql
+
+Run the models the the dim_customers depend on
+> dbt run --select +dim_customers
+
+Preview the dim_customers
+> dbt show --limit 5 --inline "select * from {{ref('dim_customers')}}"
+
+Create another macros
+> code macros/cent_to_dollars.sql
+i. Replace the stg_products to refer to the cents_to_dollars for the price
+ii. Replace the stg_order_items unit_price to use cents_to_dollars
+iii. Replace the stg_payments to use cents_to_dollars
+
+Create an intermediate model for pivoted payments
+> code models/intermediate/int_payments_pivoted.sql
+
+Compile
+> dbt compile --select int_payments_pivoted
+
+Modify the models/marts/fct_orders.sql to reflect the use of payment pivot
+
+Run all dependencies
+> dbt run --select +fct_orders
+
+Create the _staging.yml model
+> code models/staging/_staging.yml
+
+Run the test
+> dbt test
+i. You can see the output at target\compiled\shopflow\models\staging\_staging.yml\unique_stg_orders_order_id.sql
+
+Check the error in the stg_orders table
+> dbt show --inline "select order_id, count(*) as n from {{ ref('stg_customers') }} group by 1 having count(*) > 1"
+
+Update the stg_orders to remove duplicates and trim the necessary fields
+
+Build
+> dbt build --select stg_orders
+
+Run the test
+> dbt test
+
+Create test for payments and order totals
+> code tests/assert_payments_match_order_totals.sql
+
+Create a generic test
+> code tests/generic/positive_value.sql
+
+Add it to the _staging.yml
+
+Test it
+> dbt test --select test_type:singular
+
+Check payments
+> dbt test --select stg_payments
+
+Create marts models
+> code models/marts/_marts.yml
+
+Run the test
+> dbt test --select test_type:unit
+
+Build it
+> dbt build --select dim_customers
+
+Create the documentation
+> code models/docs.md
+
+Update the _staging.yml
+i. Add to the description block.
+
+Update the _marts.yml
+i. Add the description block.
+
+Generate the documentation
+> dbt docs generate
+
+Serve the documentation
+> dbt docs serve --port 8080 --no-browser > logs/docs.log
+
+SCD2
+=========================================================
+
+Create a snapshot
+> code snapshots/customers_snapshot.yml
+
+Take a snapshot
+> dbt snapshot
+
+Update a customer
+> code update_customers.ipynb
+i. Execute it
+
+Run a snapshot again
+> dbt snapshot
+i. Check its history again
+
+Create events streamer
+> code new_events.ipynb
+
+Run it
+> papermill new_events.ipynb output_new_events.ipynb -p n 500
+
+Create the order events facts table
+> code models/marts/fct_order_events.sql
+
+Run
+> dbt run --select fct_order_events
+
+Add 200 more to the events
+> papermill new_events.ipynb output_new_events.ipynb -p n 200
+i. Then run the model again
+
+Resume at 1:10:00

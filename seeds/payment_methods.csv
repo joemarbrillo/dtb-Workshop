@@ -1,0 +1,5 @@
+payment_method,method_group,is_card
+card,card,true
+wallet,digital,false
+bank_transfer,bank,false
+cash_on_delivery,cash,false
