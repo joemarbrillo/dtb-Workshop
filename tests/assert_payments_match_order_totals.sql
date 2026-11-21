@@ -2,5 +2,5 @@
 
 select order_id, order_total, total_paid
 from {{ ref('fct_orders') }}
-where /*status = 'completed'
-    and */abs(order_total - coalesce(total_paid, 0)) > 0.01
+where status = 'completed'
+    and abs(order_total - coalesce(total_paid, 0)) > 0.01

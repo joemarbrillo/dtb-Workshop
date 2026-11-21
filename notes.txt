@@ -209,3 +209,119 @@ Update the _marts.yml
 Build it
 > dbt build --select fct_order_items
 
+Preview
+> dbt show --select fct_order_items --limit 4
+
+Add tags
+i. Modify the dbt_project.yml
+ii. Use it in command
+    > dbt ls --select tag:daily --resource-type model
+    > dbt ls --select tag:hourly --resource-type model
+
+Using selectors
+> code selectors.yml
+i. Use in command
+    > dbt ls --selector nightly --resource-type model
+
+Let's load the data to the production file
+> papermill load_raw.ipynb output_load_raw.ipynb -p DB shopflow_prod.duckdb; papermill new_events.ipynb output_new_events.ipynb -p n 500 -p DB "shopflow_prod.duckdb"
+
+Build everything in prod
+> dbt build --target prod
+
+Save the manifest
+> mkdir -p prod_state ; cp target/manifest.json prod_state/; ls prod_state
+
+Check which files changed vs prod
+> dbt ls --select state:modified --state prod_state --resource-type model
+
+Build the ones that are modified (slim CI)
+> dbt build --select state:modified+ --defer --state prod_state
+
+Create a mart monthly revenue
+> code models/marts/mart_monthly_revenue.sql
+
+Update the _marts.yml
+
+Build the marts
+> dbt build --select +mart_monthly_revenue
+
+Check the report
+> dbt show --limit 10 --inline "select * from {{ref('mart_monthly_revenue')}}"
+
+Create an export report utility
+> code export_report.ipynb
+
+Setup a DAG in Airflow
+> pip install apache-airflow
+> code airflow_env.bat
+
+Run the ShopFlow project every morning with Airflow.
+Create a DAG
+> code dags/shopflow_dbt.ipynb
+
+Modify the _marts.yml
+i. Add a config contracts
+
+Build the mart
+> dbt build --select mart_monthly_revenue
+
+Update the mart_monthly_revenue units to reflect as bigint
+
+Let's create a model using python
+> code models/marts/status_summary.py
+
+Build it
+> dbt build --select status_summary
+
+Use an inline query to select it
+> dbt show --inline "select * from {{ ref('status_summary') }}"
+
+Show 
+> dbt ls --select +status_summary --resource-type model --output name
+
+Modify dbt_project.yml
+
+Run it
+> dbt build --select stg_products
+
+Run for the whole staging
+> dbt run --select staging
+
+Show the log
+> dbt show --inline "select * from main.dbt_run_log"
+
+Run a macro that prints row count
+> code macros/row_counts.sql
+
+Run operation
+> dbt run-operation row_counts
+
+Run with args
+> dbt run-operation row_counts --args '{schema_name: staging}'
+
+Analyses for adhoc
+(not every query becomes a model)
+> code analyses/top_customers.sql
+
+Compile it
+> dbt compile --select top_customers
+
+Show
+> dbt show --select top_customers --limit 5
+
+Exposure (if i changes this model, which will notice?)
+> code models/marts/_exposure.yml
+> dbt ls --select +exposure:monthly_revenue_report --resource-type model --output name
+
+In case there is an error from a previous build, we can use
+> dbt retry
+
+Production checklist
+> code notes/production_checklist.md
+
+Clean
+> dbt clean
+Install dependencies: > dbt deps
+Build: > dbt build
+Count: > dbt ls --resource-type model --output name | sort

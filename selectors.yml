@@ -1,0 +1,10 @@
+selectors:
+  - name: nightly
+    description: Everything except the hourly event models
+    definition:
+      union:
+        - method: fqn
+          value: "*"
+        - exclude:
+          - method: tag
+            value: hourly

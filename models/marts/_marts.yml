@@ -23,6 +23,32 @@ models:
       - name: total_paid
         description: Sum of all payments for the order, in dollars.
 
+  - name: mart_monthly_revenue
+    description: Monthly revenue by region and category, returns excluded
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: order_month
+        data_type: date
+        constraints:
+          - type: not_null
+      - name: region
+        data_type: varchar
+      - name: category
+        data_type: varchar
+      - name: orders
+        data_type: bigint
+      - name: units
+        data_type: bigint
+      - name: revenue
+        data_type: double
+        data_tests:
+          - positive_value
+      - name: avg_order_value
+        data_type: double
+        
+
   - name: fct_order_items
     columns: 
       - name: order_item_key

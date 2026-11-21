@@ -20,8 +20,13 @@ models:
     marts:
       +materialized: table
       +schema: marts
+      +tags: ["daily"]
       
 seeds:
   shopflow:
     +schema: ref
-    
+
+on-run-end:
+  - "create table if not exists main.dbt_run_log (invocation_id varchar, run_at timestamp, target varchar, nodes integer)"
+  - "insert into main.dbt_run_log values ('{{ invocation_id }}', current_timestamp, '{{ target.name }}', {{ results | length}})"
+  

@@ -1,0 +1,14 @@
+version: 2
+
+exposures:
+  - name: monthly_revenue_report
+    label: Monthly revenue report
+    type: analysis
+    maturity: medium
+    description: The CSV report the finance team opens every month
+    depends_on:
+      - ref('mart_monthly_revenue')
+    owner:
+      name: ShopFlow Data Team
+      email: joemar.brillo@outlook.com
+      
