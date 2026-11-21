@@ -23,6 +23,17 @@ models:
       - name: total_paid
         description: Sum of all payments for the order, in dollars.
 
+  - name: fct_order_items
+    columns: 
+      - name: order_item_key
+        data_tests: [unique, not_null]
+      - name: quantity
+        data_tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
+                max_value: 10
+
 unit_tests:
   - name: test_customer_segment_thresholds
     model: dim_customers

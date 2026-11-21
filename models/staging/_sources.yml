@@ -14,4 +14,4 @@ sources:
       - name: orders
       - name: order_items
       - name: payments
-      
+      - name: order_events

@@ -195,4 +195,17 @@ Add 200 more to the events
 > papermill new_events.ipynb output_new_events.ipynb -p n 200
 i. Then run the model again
 
-Resume at 1:10:00
+Create dbt packages
+> code packages.yml
+
+Compile dependencies for dbt packages
+> dbt deps
+
+Create a fct_order_items.sql
+> code models/marts/fct_order_items.sql
+
+Update the _marts.yml
+
+Build it
+> dbt build --select fct_order_items
+
