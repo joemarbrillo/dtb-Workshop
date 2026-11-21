@@ -325,3 +325,4 @@ Clean
 Install dependencies: > dbt deps
 Build: > dbt build
 Count: > dbt ls --resource-type model --output name | sort
+> dbt ls --select +mart_monthly_revenue --resource-type model --resource-type seed --resource-type source --output name
